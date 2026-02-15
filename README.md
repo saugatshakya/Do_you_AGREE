@@ -20,7 +20,6 @@ The model achieves accuracies ranging from 37.8% to 54.1% across different model
 ```
 assignment_4/
 ├── final.ipynb              # Main submission notebook with full implementation
-├── main_clean.ipynb         # Development notebook (same as final.ipynb)
 ├── README.md                # This file
 ├── assignment.md            # Assignment requirements
 ├── app/                     # Web application
@@ -59,7 +58,7 @@ pip install -r requirements.txt
 
 ### Implementation Details
 - **Architecture**: 4-layer BERT with 4 attention heads, d_model=256, d_ff=1024
-- **Dataset**: BookCorpus (subset of ~100k samples) from HuggingFace
+- **Dataset**: BookCorpus (for test mode) or Wikipedia (for small/medium modes) from HuggingFace
 - **Tokenization**: Regex pattern `r"\w+|[^\w\s]"` to separate words and punctuation
 - **Vocabulary**: Top 50k words from MLM corpus + SNLI data to reduce [UNK] tokens
 - **Training**: Adam optimizer, learning rate 1e-4, 3 epochs, batch size 16
@@ -122,8 +121,8 @@ weighted avg       0.54      0.54      0.54       495
 | Mode | Dataset Size | Accuracy | Training Time | Description |
 |------|-------------|----------|---------------|-------------|
 | test | 1% BookCorpus + 5k SNLI | 37.8% | ~5 min | CPU smoke test |
-| small | 5% BookCorpus + 20k SNLI | 51.1% | ~30 min | GPU small experiment |
-| medium | 8% BookCorpus + 30k SNLI | 54.1% | ~2-3 hours | GPU larger experiment |
+| small | 5% Wikipedia + 20k SNLI | 51.1% | ~30 min | GPU small experiment |
+| medium | 8% Wikipedia + 30k SNLI | 54.1% | ~2-3 hours | GPU larger experiment |
 
 ### Training Curves
 
@@ -185,7 +184,7 @@ weighted avg       0.54      0.54      0.54       495
 
 ### Training Details
 
-- **Data**: BookCorpus for MLM, SNLI for NLI fine-tuning
+- **Data**: BookCorpus (test mode) or Wikipedia (small/medium modes) for MLM, SNLI for NLI fine-tuning
 - **Architecture**: 4-layer BERT with 4 heads, d_model=256
 - **Training**: Adam optimizer, learning rate 1e-4, layer freezing on bottom 50%
 - **Batch Size**: 16, Max Length: 64
