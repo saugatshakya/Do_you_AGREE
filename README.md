@@ -21,7 +21,6 @@ The model achieves accuracies ranging from 37.8% to 54.1% across different model
 assignment_4/
 ├── final.ipynb              # Main submission notebook with full implementation
 ├── README.md                # This file
-├── assignment.md            # Assignment requirements
 ├── app/                     # Web application
 │   ├── app.py              # Flask server with model loading
 │   └── templates/
