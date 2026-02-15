@@ -1,0 +1,7 @@
+[
+  {
+    "premise": "A man is playing a guitar on stage.",
+    "hypothesis": "The man is performing music.",
+    "expected": "entailment"
+  }
+]

@@ -1,0 +1,10 @@
+{
+  "notebook": "main_clean.ipynb",
+  "run_mode": "test",
+  "models": [
+    "results/main_clean/test/models/bert_encoder_clean.pt",
+    "results/main_clean/test/models/sbert_clean.pt"
+  ],
+  "plots_dir": "results/main_clean/test/plots",
+  "configs_dir": "results/main_clean/test/configs"
+}

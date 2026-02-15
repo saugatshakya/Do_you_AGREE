@@ -1,0 +1,8 @@
+{
+  "run_mode": "small",
+  "steps_executed": 500,
+  "batch_size": 16,
+  "max_len": 64,
+  "max_mask": 10,
+  "seed": 1234
+}

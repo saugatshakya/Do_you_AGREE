@@ -1,0 +1,8 @@
+{
+  "run_mode": "compare",
+  "steps_executed": 10,
+  "batch_size": 6,
+  "max_len": 64,
+  "max_mask": 10,
+  "seed": 1234
+}

@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NLI Prediction with Sentence-BERT</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+        body { 
+            font-family: 'Inter', sans-serif; 
+            margin: 0; 
+            padding: 20px; 
+            background: #2d2d2d; 
+            color: #e0e0e0; 
+            min-height: 100vh; 
+            display: flex; 
+            flex-direction: column; 
+            align-items: center; 
+        }
+        .container {
+            max-width: 700px; 
+            width: 100%; 
+            background: #2d2d2d; 
+            border-radius: 20px; 
+            box-shadow: 
+                20px 20px 40px #1a1a1a, 
+                -20px -20px 40px #404040; 
+            padding: 40px; 
+            margin-bottom: 20px; 
+        }
+        h1 { 
+            color: #9F7AEA; 
+            text-align: center; 
+            font-weight: 600; 
+            margin-bottom: 10px; 
+            font-size: 2.2em; 
+        }
+        p { 
+            text-align: center; 
+            color: #b0b0b0; 
+            margin-bottom: 40px; 
+            font-weight: 300; 
+        }
+        form { 
+            display: flex; 
+            flex-direction: column; 
+            gap: 25px; 
+        }
+        .form-group {
+            display: flex; 
+            flex-direction: column; 
+        }
+        label { 
+            color: #9F7AEA; 
+            font-weight: 500; 
+            margin-bottom: 8px; 
+            font-size: 0.9em; 
+        }
+        textarea { 
+            padding: 15px 20px; 
+            background: #2d2d2d; 
+            border: none; 
+            border-radius: 15px; 
+            color: #e0e0e0; 
+            font-size: 16px; 
+            box-shadow: 
+                inset 5px 5px 10px #1a1a1a, 
+                inset -5px -5px 10px #404040; 
+            outline: none; 
+            transition: box-shadow 0.3s; 
+            resize: vertical; 
+            min-height: 100px; 
+        }
+        textarea:focus { 
+            box-shadow: 
+                inset 8px 8px 15px #1a1a1a, 
+                inset -8px -8px 15px #404040, 
+                0 0 0 2px #9F7AEA; 
+        }
+        textarea::placeholder {
+            color: #888; 
+        }
+        button { 
+            padding: 15px; 
+            background: #2d2d2d; 
+            border: none; 
+            border-radius: 15px; 
+            color: #e0e0e0; 
+            font-size: 16px; 
+            font-weight: 500; 
+            cursor: pointer; 
+            box-shadow: 
+                5px 5px 10px #1a1a1a, 
+                -5px -5px 10px #404040; 
+            transition: box-shadow 0.3s; 
+            margin-top: 10px; 
+        }
+        button:hover { 
+            box-shadow: 
+                8px 8px 15px #1a1a1a, 
+                -8px -8px 15px #404040; 
+        }
+        button:active { 
+            box-shadow: 
+                inset 5px 5px 10px #1a1a1a, 
+                inset -5px -5px 10px #404040; 
+        }
+        .result { 
+            background: #2d2d2d; 
+            padding: 25px; 
+            border-radius: 15px; 
+            box-shadow: 
+                inset 5px 5px 10px #1a1a1a, 
+                inset -5px -5px 10px #404040; 
+            line-height: 1.6; 
+            color: #e0e0e0; 
+            border: 1px solid #404040; 
+            margin-top: 20px; 
+        }
+        .error { 
+            background: #2d2d2d; 
+            padding: 25px; 
+            border-radius: 15px; 
+            box-shadow: 
+                inset 5px 5px 10px #1a1a1a, 
+                inset -5px -5px 10px #404040; 
+            line-height: 1.6; 
+            color: #ff6b6b; 
+            border: 1px solid #404040; 
+            margin-top: 20px; 
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Natural Language Inference (NLI) Prediction</h1>
+        <p>Enter a premise and hypothesis to predict their relationship: entailment, neutral, or contradiction.</p>
+        <form id="nli-form">
+            <div class="form-group">
+                <label for="premise">Premise:</label>
+                <textarea id="premise" placeholder="Enter the premise sentence here..."></textarea>
+            </div>
+            <div class="form-group">
+                <label for="hypothesis">Hypothesis:</label>
+                <textarea id="hypothesis" placeholder="Enter the hypothesis sentence here..."></textarea>
+            </div>
+            <button type="submit">Predict</button>
+        </form>
+        <div id="result" class="result" style="display: none;">
+            <h3>Predictions from All Models</h3>
+            <div id="predictions"></div>
+        </div>
+        <div id="error" class="error" style="display: none;">
+            <p id="error-msg"></p>
+        </div>
+    </div>
+
+    <script>
+        document.getElementById('nli-form').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const premise = document.getElementById('premise').value.trim();
+            const hypothesis = document.getElementById('hypothesis').value.trim();
+            if (!premise || !hypothesis) {
+                showError('Please enter both premise and hypothesis.');
+                return;
+            }
+            fetch('/predict', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ premise, hypothesis })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.error) {
+                    showError(data.error);
+                } else {
+                    let html = '';
+                    for (const [mode, result] of Object.entries(data)) {
+                        html += `<p><strong>${mode.toUpperCase()}:</strong> ${result.prediction} (confidence: ${(result.confidence * 100).toFixed(2)}%)</p>`;
+                    }
+                    document.getElementById('predictions').innerHTML = html;
+                    document.getElementById('result').style.display = 'block';
+                    document.getElementById('error').style.display = 'none';
+                }
+            })
+            .catch(error => {
+                showError('An error occurred while making the prediction.');
+            });
+        });
+
+        function showError(message) {
+            document.getElementById('error-msg').textContent = message;
+            document.getElementById('error').style.display = 'block';
+            document.getElementById('result').style.display = 'none';
+        }
+    </script>
+</body>
+</html>
